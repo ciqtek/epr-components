@@ -1,0 +1,305 @@
+<template>
+  <div class="epr-btn">
+    <span class="epr-btn-reduce" @click="handleChange('left')">
+      <span class="math-minus"></span>
+    </span>
+    <span class="epr-btn-track" @mousedown.self="mousedownEvent" @mouseup.self="mouseupEvent" @mouseout="clearTimer" ref="track">
+      <span class="epr-btn-slider" ref="slider" @mousedown="sliderMouseDown" @mouseup="sliderMouseUp" @mousemove="sliderMouseMove" @mouseout="sliderMouseOut"></span>
+    </span>
+    <span class="epr-btn-increase" @click="handleChange('right')">
+      <span class="math-plus"></span>
+    </span>
+  </div>
+</template>
+<script lang="ts">
+import { defineComponent, onMounted, ref } from 'vue'
+export default defineComponent({
+  name: 'epr-slider-btn',
+  props: {
+    modelValue: {
+      type: Number,
+      default: 0
+    },
+    min: {
+      type: Number,
+      default: 0
+    },
+    max: {
+      type: Number,
+      default: 100
+    },
+    step: {
+      type: Array,
+      default: [1, '20', 3]
+    }
+  },
+  emits: ['change'],
+  setup (props, { emit }) {
+    console.log(props)
+    const slider = ref() // 滑块 dom
+    const track = ref() // 滑道 dom
+    let sliderWidth = 0 // 滑块的宽度
+    let trackWidth = 0 // 滑道的宽度
+    let timer1: any = 0 // 判断是点击还是长按
+    let timer2: any = 0 // 长按时，间隔时间
+    let canMove = false
+    let x = 0
+    
+    // 两侧按钮
+    function handleChange (pos: string) {
+      const sPos = slider.value.offsetLeft
+      const sWidth = slider.value.offsetWidth
+      const propsStep = props.step[0]
+      let step = 0
+      if (typeof propsStep === 'string') {
+        if (propsStep.includes('%')) {
+          step = trackWidth * Number(propsStep.replace('%', '')) / 100
+        } else {
+          step = Number(propsStep)
+        }
+      } else if (typeof propsStep === 'number') {
+        step = propsStep
+      } else {
+        return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
+      }
+      if (pos === 'left') {
+        if (sPos - step < 0) {
+          slider.value.style.left = '0px'
+        } else {
+          slider.value.style.left = (sPos - step) + 'px'
+        }
+      }
+      if (pos === 'right') {
+        if (sPos + sWidth + step < trackWidth) {
+          slider.value.style.left = (sPos + step) + 'px'
+        } else {
+          slider.value.style.left = (trackWidth - sWidth) + 'px'
+        }
+      }
+      const newPos = slider.value.offsetLeft as number
+      const value = (props.max - props.min) * newPos / (trackWidth - sWidth)
+      emit('change', value)
+    }
+    // 鼠标按下事件
+    function mousedownEvent (e: MouseEvent) {
+      timer1 = setTimeout(() => {
+        longpress(e)
+      }, 300)
+    }
+    // 单击事件
+    function mouseupEvent (e: MouseEvent) {
+      clearTimeout(timer1)
+      clearInterval(timer2)
+      if (timer1 !== 0) {
+        const offsetX = e.offsetX
+        const sPos = slider.value.offsetLeft
+        const sWidth = slider.value.offsetWidth
+        const propsStep = props.step[1]
+        let step = 0
+        if (typeof propsStep === 'string') {
+          if (propsStep.includes('%')) {
+            step = trackWidth * Number(propsStep.replace('%', '')) / 100
+          } else {
+            step = Number(propsStep)
+          }
+        } else if (typeof propsStep === 'number') {
+          step = propsStep
+        } else {
+          return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
+        }
+        if (offsetX > sPos) {
+          if (sPos + step < trackWidth - sWidth) {
+            slider.value.style.left = (sPos + step) + 'px'
+          } else {
+            slider.value.style.left = (trackWidth - sWidth) + 'px'
+          }
+        } else {
+          if (sPos - step > 0) {
+            slider.value.style.left = (sPos - step) + 'px'
+          } else {
+            slider.value.style.left = '0px'
+          }
+        }
+        const newPos = slider.value.offsetLeft as number
+        const value = (props.max - props.min) * newPos / (trackWidth - sWidth)
+        emit('change', value)
+      }
+    }
+    // 长按事件
+    function longpress (e: MouseEvent) {
+      timer1 = 0
+      const offsetX = e.offsetX
+      const sWidth = slider.value.offsetWidth
+      const propsStep = props.step[1]
+      let step = 0
+      if (typeof propsStep === 'string') {
+        if (propsStep.includes('%')) {
+          step = trackWidth * Number(propsStep.replace('%', '')) / 100
+        } else {
+          step = Number(propsStep)
+        }
+      } else if (typeof propsStep === 'number') {
+        step = propsStep
+      } else {
+        return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
+      }
+      timer2 =setInterval(() => {
+        const sPos = slider.value.offsetLeft
+        if (offsetX > sPos) {
+          if (sPos + step < trackWidth - sWidth) {
+            slider.value.style.left = (sPos + step) + 'px'
+          } else {
+            slider.value.style.left = (trackWidth - sWidth) + 'px'
+          }
+        } else {
+          if (sPos - step > 0) {
+            slider.value.style.left = (sPos - step) + 'px'
+          } else {
+            slider.value.style.left = '0px'
+          }
+        }
+        const newPos = slider.value.offsetLeft as number
+        const value = (props.max - props.min) * newPos / (trackWidth - sWidth)
+        emit('change', value)
+      }, 250)
+    }
+    // 清除定时器
+    function clearTimer () {
+      clearTimeout(timer1)
+      clearInterval(timer2)
+    }
+    
+    function sliderMouseDown (evt: MouseEvent) {
+      console.log('sliderMouseDown')
+      canMove = true
+      const left = slider.value.offsetLeft
+      x = evt.clientX - left
+    }
+    function sliderMouseUp () {
+      console.log('sliderMouseUp')
+      canMove = false
+    }
+    function sliderMouseOut () {
+      console.log('sliderMouseOut')
+      canMove = false
+    }
+    function sliderMouseMove (evt: MouseEvent) {
+      if (canMove) {
+        if (evt.clientX - x < 0) {
+          slider.value.style.left = '0px'
+        } else if (evt.clientX - x > trackWidth - sliderWidth) {
+          slider.value.style.left = trackWidth - sliderWidth + 'px'
+        } else {
+          slider.value.style.left = evt.clientX - x + 'px'
+        }
+      }
+    }
+
+    onMounted(() => {
+      trackWidth = track.value.offsetWidth
+      sliderWidth = slider.value.offsetWidth
+      slider.value.style.left = props.modelValue + 'px'
+      console.log(trackWidth, 'track width')
+    })
+
+    return {
+      track,
+      slider,
+      handleChange,
+      mousedownEvent,
+      mouseupEvent,
+      clearTimer,
+      sliderMouseDown,
+      sliderMouseMove,
+      sliderMouseUp,
+      sliderMouseOut
+    }
+  }
+})
+</script>
+<style lang="scss">
+.epr-btn{
+  height: 28px;
+  width: 256px;
+  border: 1px solid #c6c6c6;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .epr-btn-reduce{
+    width: 28px;
+    height: 28px;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: #f7f6f6;
+    border-radius: 14px 0 0 14px;
+    border-right: 1px solid #c6c6c6;
+    .math-minus {
+      box-sizing: border-box;
+      position: relative;
+      display: block;
+      transform: scale(0.8);
+      width: 16px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 10px;
+      color: #9a9a9a;
+    }
+  }
+  .epr-btn-track{
+    flex: 1;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    .epr-btn-slider{
+      position: absolute;
+      left: 0px;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+      background-color: #2e99ce;
+      border-radius: 30%;
+    }
+  }
+  .epr-btn-increase{
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    background-color: #f7f6f6;
+    border-radius: 0 14px 14px 0;
+    border-left: 1px solid #c6c6c6;
+    .math-plus,
+    .math-plus::after {
+        display: block;
+        box-sizing: border-box;
+        background: currentColor;
+        border-radius: 10px
+    }
+    .math-plus {
+        margin-top: -2px;
+        position: relative;
+        transform: scale(0.8);
+        width: 16px;
+        height: 2px;
+        color: #9a9a9a;
+    }
+    .math-plus::after {
+        content: "";
+        position: absolute;
+        width: 2px;
+        height: 16px;
+        top: -7px;
+        left: 7px
+    }
+  }
+}
+</style>
