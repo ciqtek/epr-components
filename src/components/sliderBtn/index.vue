@@ -14,7 +14,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue'
 export default defineComponent({
-  name: 'epr-slider-btn',
+  name: 'epr-slider-button',
   props: {
     modelValue: {
       type: Number,
