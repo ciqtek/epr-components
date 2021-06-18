@@ -31,6 +31,10 @@ export default defineComponent({
     step: {
       type: Array,
       default: [1, '5%', '10%']
+    },
+    precision: {
+      type: Number,
+      default: 2
     }
   },
   emits: ['change'],
@@ -44,12 +48,42 @@ export default defineComponent({
     let canMove = false // 判断能否拖拽
     let x = 0 // 拖拽的位移距离
 
+    // 初始化，并检查值
+    function initAndCheck () {
+      trackWidth = track.value.offsetWidth
+      sliderWidth = slider.value.offsetWidth
+      if (props.modelValue < props.min || props.modelValue > props.max) {
+        return console.error('[EPR SLIDER BUTTON]: 当前值不能小于最小值或大于最大值')
+      } else {
+        const step =  props.modelValue * (trackWidth - sliderWidth) / (props.max - props.min)
+        slider.value.style.left = step + 'px'
+      }
+    }
     // 获取当前 slider 位置
     function getSliderLeft () {
       const sLeft = window.getComputedStyle(slider.value).left
       return Number(sLeft.replace('px', ''))
     }
-    
+    // 精度
+    function toPrecision (n: number) {
+      const p = props.precision
+      let v = (Math.round(n * 100) / 100).toString()
+      let idx = v.indexOf('.')
+      if (idx < 0) {
+        idx = v.length
+        v += '.'
+      }
+      while (v.length <= (idx + p)) {
+        v += '0'
+      }
+      return +v
+    }
+    // 返回最新的值
+    function returnValue () {
+      const newPos = getSliderLeft()
+      const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
+      emit('change', toPrecision(value))
+    }
     // 两侧按钮
     function handleChange (pos: string) {
       const sPos = getSliderLeft()
@@ -80,9 +114,7 @@ export default defineComponent({
           slider.value.style.left = (trackWidth - sliderWidth) + 'px'
         }
       }
-      const newPos = getSliderLeft()
-      const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
-      emit('change', value)
+      returnValue()
     }
     // 鼠标按下事件
     function mousedownEvent (e: MouseEvent) {
@@ -123,9 +155,7 @@ export default defineComponent({
             slider.value.style.left = '0px'
           }
         }
-        const newPos = getSliderLeft()
-        const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
-        emit('change', value)
+        returnValue()
       }
     }
     // 长按事件
@@ -160,9 +190,7 @@ export default defineComponent({
             slider.value.style.left = '0px'
           }
         }
-        const newPos = getSliderLeft()
-        const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
-        emit('change', value)
+        returnValue()
       }, 250)
     }
     // 清除定时器
@@ -195,16 +223,12 @@ export default defineComponent({
         } else {
           slider.value.style.left = evt.clientX - x + 'px'
         }
-        const newPos = getSliderLeft()
-        const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
-        emit('change', value)
+        returnValue()
       }
     }
 
     onMounted(() => {
-      trackWidth = track.value.offsetWidth
-      sliderWidth = slider.value.offsetWidth
-      // slider.value.style.left = props.modelValue + 'px'
+      initAndCheck()
     })
 
     return {

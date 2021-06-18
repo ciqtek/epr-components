@@ -3,7 +3,7 @@
   <p>min: {{min}}</p>
   <p>max: {{max}}</p>
   <p>step: {{step}}</p>
-  <epr-slider-button :min='min' :max="max" :step="step" v-model="value" @change="slider1BtnChange" />
+  <epr-slider-button :min='min' :max="max" :step="step" v-model="value" :precision="precision" @change="slider1BtnChange" />
 </template>
 
 <script lang="ts">
@@ -19,10 +19,11 @@ export default defineComponent({
     const value1 = ref(20)
     const value2 = ref(100)
     const config = reactive({
-      min: 20,
-      max: 320,
-      step: ['1', '1%', '3%'],
-      value: 20
+      min: 0,
+      max: 100,
+      step: [1, '2', '3%'],
+      value: 50,
+      precision: 2
     })
 
     function slider1BtnChange (e: number) {
