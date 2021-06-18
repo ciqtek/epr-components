@@ -1,8 +1,8 @@
 <template>
   <p>{{value1}}</p>
-  <eprSliderButton :min='0' :max="100" :step="[1, '5%', '10%']" v-model="value1" @change="slider1BtnChange" />
+  <epr-slider-button :min='0' :max="100" :step="[1, '5%', '10%']" v-model="value1" @change="slider1BtnChange" />
   <p>{{value2}}</p>
-  <eprSliderButton :min='40' :max="250" :step="[1, '5%', '10%']" v-model="value2" @change="slider2BtnChange" />
+  <epr-slider-button :min='40' :max="250" :step="[1, '5%', '10%']" v-model="value2" @change="slider2BtnChange" />
 </template>
 
 <script lang="ts">
