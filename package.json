@@ -1,9 +1,10 @@
 {
   "name": "epr-components",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build-lib": "vue-tsc --noEmit && vite build --mode=lib",
+    "build-doc": "vue-tsc --noEmit && vite build --mode=doc",
     "serve": "vite preview"
   },
   "files": [
@@ -14,6 +15,12 @@
   "main": "./dist/epr-components.umd.js",
   "module": "./dist/epr-components.es.js",
   "types": "./types/types.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/my-lib.es.js",
+      "require": "./dist/my-lib.umd.js"
+    }
+  },
   "dependencies": {
     "vue": "^3.1.1"
   },
