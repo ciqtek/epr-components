@@ -43,20 +43,26 @@ export default defineComponent({
     let timer2: any = 0 // 长按时，间隔时间
     let canMove = false // 判断能否拖拽
     let x = 0 // 拖拽的位移距离
+
+    // 获取当前 slider 位置
+    function getSliderLeft () {
+      const sLeft = window.getComputedStyle(slider.value).left
+      return Number(sLeft.replace('px', ''))
+    }
     
     // 两侧按钮
     function handleChange (pos: string) {
-      const sPos = slider.value.offsetLeft
+      const sPos = getSliderLeft()
       const propsStep = props.step[0]
       let step = 0
       if (typeof propsStep === 'string') {
         if (propsStep.includes('%')) {
-          step = trackWidth * Number(propsStep.replace('%', '')) / 100
+          step = (trackWidth - sliderWidth) * Number(propsStep.replace('%', '')) / 100
         } else {
-          step = Number(propsStep)
+          step = Number(propsStep) * (trackWidth - sliderWidth) / (props.max - props.min)
         }
       } else if (typeof propsStep === 'number') {
-        step = propsStep
+        step = propsStep * (trackWidth - sliderWidth) / (props.max - props.min)
       } else {
         return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
       }
@@ -74,7 +80,7 @@ export default defineComponent({
           slider.value.style.left = (trackWidth - sliderWidth) + 'px'
         }
       }
-      const newPos = slider.value.offsetLeft as number
+      const newPos = getSliderLeft()
       const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
       emit('change', value)
     }
@@ -90,17 +96,17 @@ export default defineComponent({
       clearInterval(timer2)
       if (timer1 !== 0) {
         const offsetX = e.offsetX
-        const sPos = slider.value.offsetLeft
+        const sPos = getSliderLeft()
         const propsStep = props.step[1]
         let step = 0
         if (typeof propsStep === 'string') {
           if (propsStep.includes('%')) {
-            step = trackWidth * Number(propsStep.replace('%', '')) / 100
+            step = (trackWidth - sliderWidth) * Number(propsStep.replace('%', '')) / 100
           } else {
-            step = Number(propsStep)
+            step = Number(propsStep) * (trackWidth - sliderWidth) / (props.max - props.min)
           }
         } else if (typeof propsStep === 'number') {
-          step = propsStep
+          step = propsStep * (trackWidth - sliderWidth) / (props.max - props.min)
         } else {
           return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
         }
@@ -117,7 +123,7 @@ export default defineComponent({
             slider.value.style.left = '0px'
           }
         }
-        const newPos = slider.value.offsetLeft as number
+        const newPos = getSliderLeft()
         const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
         emit('change', value)
       }
@@ -126,21 +132,21 @@ export default defineComponent({
     function longpress (e: MouseEvent) {
       timer1 = 0
       const offsetX = e.offsetX
-      const propsStep = props.step[1]
+      const propsStep = props.step[2]
       let step = 0
       if (typeof propsStep === 'string') {
         if (propsStep.includes('%')) {
-          step = trackWidth * Number(propsStep.replace('%', '')) / 100
+          step = (trackWidth - sliderWidth) * Number(propsStep.replace('%', '')) / 100
         } else {
-          step = Number(propsStep)
+          step = Number(propsStep) * (trackWidth - sliderWidth) / (props.max - props.min)
         }
       } else if (typeof propsStep === 'number') {
-        step = propsStep
+        step = propsStep * (trackWidth - sliderWidth) / (props.max - props.min)
       } else {
         return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
       }
       timer2 =setInterval(() => {
-        const sPos = slider.value.offsetLeft
+        const sPos = getSliderLeft()
         if (offsetX > sPos) {
           if (sPos + step < trackWidth - sliderWidth) {
             slider.value.style.left = (sPos + step) + 'px'
@@ -154,7 +160,7 @@ export default defineComponent({
             slider.value.style.left = '0px'
           }
         }
-        const newPos = slider.value.offsetLeft as number
+        const newPos = getSliderLeft()
         const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
         emit('change', value)
       }, 250)
@@ -168,7 +174,7 @@ export default defineComponent({
     // 拖拽：鼠标按下
     function sliderMouseDown (evt: MouseEvent) {
       canMove = true
-      const left = slider.value.offsetLeft
+      const left = getSliderLeft()
       x = evt.clientX - left
     }
     // 拖拽：鼠标松开
@@ -189,7 +195,7 @@ export default defineComponent({
         } else {
           slider.value.style.left = evt.clientX - x + 'px'
         }
-        const newPos = slider.value.offsetLeft as number
+        const newPos = getSliderLeft()
         const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
         emit('change', value)
       }
@@ -198,7 +204,7 @@ export default defineComponent({
     onMounted(() => {
       trackWidth = track.value.offsetWidth
       sliderWidth = slider.value.offsetWidth
-      slider.value.style.left = props.modelValue + 'px'
+      // slider.value.style.left = props.modelValue + 'px'
     })
 
     return {
