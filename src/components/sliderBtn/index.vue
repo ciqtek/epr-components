@@ -30,25 +30,23 @@ export default defineComponent({
     },
     step: {
       type: Array,
-      default: [1, '20', 3]
+      default: [1, '5%', '10%']
     }
   },
   emits: ['change'],
   setup (props, { emit }) {
-    console.log(props)
     const slider = ref() // 滑块 dom
     const track = ref() // 滑道 dom
     let sliderWidth = 0 // 滑块的宽度
     let trackWidth = 0 // 滑道的宽度
     let timer1: any = 0 // 判断是点击还是长按
     let timer2: any = 0 // 长按时，间隔时间
-    let canMove = false
-    let x = 0
+    let canMove = false // 判断能否拖拽
+    let x = 0 // 拖拽的位移距离
     
     // 两侧按钮
     function handleChange (pos: string) {
       const sPos = slider.value.offsetLeft
-      const sWidth = slider.value.offsetWidth
       const propsStep = props.step[0]
       let step = 0
       if (typeof propsStep === 'string') {
@@ -70,14 +68,14 @@ export default defineComponent({
         }
       }
       if (pos === 'right') {
-        if (sPos + sWidth + step < trackWidth) {
+        if (sPos + sliderWidth + step < trackWidth) {
           slider.value.style.left = (sPos + step) + 'px'
         } else {
-          slider.value.style.left = (trackWidth - sWidth) + 'px'
+          slider.value.style.left = (trackWidth - sliderWidth) + 'px'
         }
       }
       const newPos = slider.value.offsetLeft as number
-      const value = (props.max - props.min) * newPos / (trackWidth - sWidth)
+      const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
       emit('change', value)
     }
     // 鼠标按下事件
@@ -93,7 +91,6 @@ export default defineComponent({
       if (timer1 !== 0) {
         const offsetX = e.offsetX
         const sPos = slider.value.offsetLeft
-        const sWidth = slider.value.offsetWidth
         const propsStep = props.step[1]
         let step = 0
         if (typeof propsStep === 'string') {
@@ -108,10 +105,10 @@ export default defineComponent({
           return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
         }
         if (offsetX > sPos) {
-          if (sPos + step < trackWidth - sWidth) {
+          if (sPos + step < trackWidth - sliderWidth) {
             slider.value.style.left = (sPos + step) + 'px'
           } else {
-            slider.value.style.left = (trackWidth - sWidth) + 'px'
+            slider.value.style.left = (trackWidth - sliderWidth) + 'px'
           }
         } else {
           if (sPos - step > 0) {
@@ -121,7 +118,7 @@ export default defineComponent({
           }
         }
         const newPos = slider.value.offsetLeft as number
-        const value = (props.max - props.min) * newPos / (trackWidth - sWidth)
+        const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
         emit('change', value)
       }
     }
@@ -129,7 +126,6 @@ export default defineComponent({
     function longpress (e: MouseEvent) {
       timer1 = 0
       const offsetX = e.offsetX
-      const sWidth = slider.value.offsetWidth
       const propsStep = props.step[1]
       let step = 0
       if (typeof propsStep === 'string') {
@@ -146,10 +142,10 @@ export default defineComponent({
       timer2 =setInterval(() => {
         const sPos = slider.value.offsetLeft
         if (offsetX > sPos) {
-          if (sPos + step < trackWidth - sWidth) {
+          if (sPos + step < trackWidth - sliderWidth) {
             slider.value.style.left = (sPos + step) + 'px'
           } else {
-            slider.value.style.left = (trackWidth - sWidth) + 'px'
+            slider.value.style.left = (trackWidth - sliderWidth) + 'px'
           }
         } else {
           if (sPos - step > 0) {
@@ -159,7 +155,7 @@ export default defineComponent({
           }
         }
         const newPos = slider.value.offsetLeft as number
-        const value = (props.max - props.min) * newPos / (trackWidth - sWidth)
+        const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
         emit('change', value)
       }, 250)
     }
@@ -169,20 +165,21 @@ export default defineComponent({
       clearInterval(timer2)
     }
     
+    // 拖拽：鼠标按下
     function sliderMouseDown (evt: MouseEvent) {
-      console.log('sliderMouseDown')
       canMove = true
       const left = slider.value.offsetLeft
       x = evt.clientX - left
     }
+    // 拖拽：鼠标松开
     function sliderMouseUp () {
-      console.log('sliderMouseUp')
       canMove = false
     }
+    // 拖拽：鼠标移出
     function sliderMouseOut () {
-      console.log('sliderMouseOut')
       canMove = false
     }
+    // 拖拽：鼠标拖拽
     function sliderMouseMove (evt: MouseEvent) {
       if (canMove) {
         if (evt.clientX - x < 0) {
@@ -192,6 +189,9 @@ export default defineComponent({
         } else {
           slider.value.style.left = evt.clientX - x + 'px'
         }
+        const newPos = slider.value.offsetLeft as number
+        const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
+        emit('change', value)
       }
     }
 
@@ -199,7 +199,6 @@ export default defineComponent({
       trackWidth = track.value.offsetWidth
       sliderWidth = slider.value.offsetWidth
       slider.value.style.left = props.modelValue + 'px'
-      console.log(trackWidth, 'track width')
     })
 
     return {

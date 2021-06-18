@@ -1,10 +1,13 @@
 <template>
-  <slider-btn :min='50' :max="250" :step="[10, '6%', 20]" v-model="value" @change="sliderBtnChange" />
+  <p>{{value1}}</p>
+  <slider-btn :min='0' :max="100" :step="[1, '5%', '10%']" v-model="value1" @change="slider1BtnChange" />
+  <p>{{value2}}</p>
+  <slider-btn :min='40' :max="250" :step="[1, '5%', '10%']" v-model="value2" @change="slider2BtnChange" />
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
-import SliderBtn from './components/SliderBtn.vue'
+import { defineComponent, ref } from 'vue'
+import SliderBtn from './components/sliderBtn/index.vue'
 
 export default defineComponent({
   name: 'App',
@@ -12,19 +15,21 @@ export default defineComponent({
     SliderBtn
   },
   setup () {
-    const value = ref(20)
-    const obj = reactive({
-      num: 1
-    })
+    const value1 = ref(20)
+    const value2 = ref(100)
 
-    function sliderBtnChange (e: number) {
-      console.log('app.vue e', e)
+    function slider1BtnChange (e: number) {
+      value1.value = e
+    }
+    function slider2BtnChange (e: number) {
+      value2.value = e
     }
 
     return {
-      value,
-      obj,
-      sliderBtnChange
+      value1,
+      value2,
+      slider1BtnChange,
+      slider2BtnChange
     }
   }
 })

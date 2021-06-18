@@ -1,17 +1,26 @@
 {
-  "version": "0.0.0",
+  "name": "epr-components",
+  "version": "0.1.1",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "serve": "vite preview"
   },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "main": "./dist/epr-components.umd.js",
+  "module": "./dist/epr-components.es.js",
+  "types": "./types/types.d.ts",
   "dependencies": {
-    "sass": "^1.35.1",
-    "vue": "^3.0.5"
+    "vue": "^3.1.1"
   },
   "devDependencies": {
+    "@types/node": "^15.12.2",
     "@vitejs/plugin-vue": "^1.2.3",
     "@vue/compiler-sfc": "^3.0.5",
+    "sass": "^1.35.1",
     "typescript": "^4.3.2",
     "vite": "^2.3.7",
     "vue-tsc": "^0.0.24"
