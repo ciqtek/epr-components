@@ -1,18 +1,18 @@
 <template>
   <p>{{value1}}</p>
-  <slider-btn :min='0' :max="100" :step="[1, '5%', '10%']" v-model="value1" @change="slider1BtnChange" />
+  <eprSliderButton :min='0' :max="100" :step="[1, '5%', '10%']" v-model="value1" @change="slider1BtnChange" />
   <p>{{value2}}</p>
-  <slider-btn :min='40' :max="250" :step="[1, '5%', '10%']" v-model="value2" @change="slider2BtnChange" />
+  <eprSliderButton :min='40' :max="250" :step="[1, '5%', '10%']" v-model="value2" @change="slider2BtnChange" />
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import SliderBtn from './components/sliderBtn/index.vue'
+import { eprSliderButton } from './components/'
 
 export default defineComponent({
   name: 'App',
   components: {
-    SliderBtn
+    eprSliderButton
   },
   setup () {
     const value1 = ref(20)

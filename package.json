@@ -1,6 +1,6 @@
 {
   "name": "epr-components",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
@@ -10,6 +10,7 @@
     "dist",
     "types"
   ],
+  "private": false,
   "main": "./dist/epr-components.umd.js",
   "module": "./dist/epr-components.es.js",
   "types": "./types/types.d.ts",
