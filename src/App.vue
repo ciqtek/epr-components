@@ -1,14 +1,17 @@
 <template>
-  <p>value: {{value}}</p>
-  <p>min: {{min}}</p>
-  <p>max: {{max}}</p>
-  <p>step: {{step}}</p>
   <epr-slider-button :min='min' :max="max" :step="step" v-model="value" :precision="precision" @change="slider1BtnChange" />
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRefs } from 'vue'
+import { defineComponent, reactive, toRefs } from 'vue'
 import { eprSliderButton } from './components/'
+interface Config {
+  min: number
+  max: number
+  step: (string | number)[]
+  value: number
+  precision: number
+}
 
 export default defineComponent({
   name: 'App',
@@ -16,9 +19,7 @@ export default defineComponent({
     eprSliderButton
   },
   setup () {
-    const value1 = ref(20)
-    const value2 = ref(100)
-    const config = reactive({
+    const config: Config = reactive({
       min: 0,
       max: 100,
       step: [1, '2', '3%'],
@@ -31,8 +32,6 @@ export default defineComponent({
     }
 
     return {
-      value1,
-      value2,
       ...toRefs(config),
       slider1BtnChange
     }
