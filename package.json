@@ -4,8 +4,7 @@
   "scripts": {
     "dev": "vite",
     "build-lib": "vue-tsc --noEmit && vite build --mode=lib",
-    "build-doc": "vue-tsc --noEmit && vite build --mode=doc",
-    "serve": "vite preview"
+    "build-doc": "vue-tsc --noEmit && vite build --mode=doc"
   },
   "files": [
     "dist",

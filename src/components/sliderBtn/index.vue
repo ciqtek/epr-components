@@ -242,8 +242,8 @@ export default defineComponent({
 </script>
 <style lang="scss">
 .epr-btn{
-  height: 28px;
-  width: 256px;
+  height: 100%;
+  width: 100%;
   border: 1px solid #c6c6c6;
   border-radius: 14px;
   display: flex;
@@ -251,7 +251,7 @@ export default defineComponent({
   justify-content: space-between;
   .epr-btn-reduce{
     width: 28px;
-    height: 28px;
+    height: 100%;
     display: flex;
     cursor: pointer;
     align-items: center;
@@ -274,7 +274,7 @@ export default defineComponent({
   }
   .epr-btn-track{
     flex: 1;
-    height: 28px;
+    height: 100%;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -284,7 +284,7 @@ export default defineComponent({
       left: 0px;
       display: inline-block;
       width: 32px;
-      height: 18px;
+      height: 80%;
       background-color: #2e99ce;
       border-radius: 30%;
     }
@@ -292,7 +292,7 @@ export default defineComponent({
   .epr-btn-increase{
     box-sizing: border-box;
     width: 28px;
-    height: 28px;
+    height: 100%;
     display: flex;
     cursor: pointer;
     align-items: center;

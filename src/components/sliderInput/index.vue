@@ -141,7 +141,7 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   flex: 1;
-  box-sizing: border-box;
+  height: 90%;
   .epr-btn-input{
     border: none;
     outline: none;
