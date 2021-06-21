@@ -4,7 +4,7 @@
       <span class="math-minus"></span>
     </span>
     <span class="epr-btn-content">
-      <input class="epr-btn-input" v-model="value" type="text" @keydown.down="keyEvent('down')" @keydown.up="keyEvent('up')">
+      <input class="epr-btn-input" v-model="value" type="text" @change="changeEvent" @keydown.down="keyEvent('down')" @keydown.up="keyEvent('up')">
     </span>
     <span class="epr-btn-increase" @click="handleChange('right')">
       <span class="math-plus"></span>
@@ -12,6 +12,7 @@
   </div>
 </template>
 <script lang="ts">
+import { error } from 'console'
 import { defineComponent, onMounted, ref } from 'vue'
 export default defineComponent({
   name: 'epr-slider-input',
@@ -82,6 +83,28 @@ export default defineComponent({
       emit('change', toPrecision(value.value))
     }
 
+    // 用户 手动输入 事件
+    function changeEvent (e: Event) {
+      const target = e.target as HTMLInputElement
+      const n = target.value
+      const m = isNaN(Number(n))
+      if (m) {
+        value.value = 0
+        const error = '[EPR SLIDER INPUT]: 输入的值错误，请检查后输入'
+        emit('change', 0, error)
+      } else {
+        const num = Number(n)
+        if (num > props.max || num < props.min) {
+          const error = '[EPR SLIDER INPUT]: 输入的值不能小于最小值或大于最大值，请检查后输入'
+          value.value = 0
+          emit('change', 0, error)
+        } else {
+          value.value = num
+          emit('change', toPrecision(num))
+        }
+      }
+    }
+
     // 键盘 上下按键 事件
     function keyEvent (str: string) {
       if (props.step[1]) {
@@ -106,6 +129,7 @@ export default defineComponent({
     return {
       value,
       keyEvent,
+      changeEvent,
       handleChange
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "epr-components",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "scripts": {
     "dev": "vite",
     "build-lib": "vue-tsc --noEmit && vite build --mode=lib",

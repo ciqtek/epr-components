@@ -38,8 +38,11 @@ export default defineComponent({
       config.value = e
     }
 
-    function sliderInputChange (e: number) {
+    function sliderInputChange (e: number, error?: string) {
       config.value2 = e
+      if (error) {
+        console.log(error)
+      }
     }
 
     return {
