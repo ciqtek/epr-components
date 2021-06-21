@@ -64,19 +64,13 @@ export default defineComponent({
       const sLeft = window.getComputedStyle(slider.value).left
       return Number(sLeft.replace('px', ''))
     }
+
     // 精度
     function toPrecision (n: number) {
       const p = props.precision
-      let v = (Math.round(n * 100) / 100).toString()
-      let idx = v.indexOf('.')
-      if (idx < 0) {
-        idx = v.length
-        v += '.'
-      }
-      while (v.length <= (idx + p)) {
-        v += '0'
-      }
-      return +v
+      const numReg = new RegExp(`^(.*\\..{${p}}).*$`)
+      const num = n.toString().replace(numReg, '$1')
+      return +num
     }
     // 返回最新的值
     function returnValue () {
