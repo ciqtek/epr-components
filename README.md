@@ -1,7 +1,7 @@
 <h1 align="center">EPR Components</h1>
 
 <p align="center">
-<a href="https://github.com/Hunlongyu/ZY-Player-Web/issues" target="_blank">反馈</a>
+<a href="https://github.com/Hunlongyu/epr-components/issues" target="_blank">反馈</a>
 </p>
 <p align="center">
 <img src="https://forthebadge.com/images/badges/built-with-love.svg">
