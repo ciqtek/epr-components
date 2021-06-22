@@ -1,13 +1,13 @@
 <template>
   <div class="epr-btn">
-    <span class="epr-btn-reduce" @click="handleChange('left')">
-      <span class="math-minus"></span>
+    <span class="epr-btn-reduce" @mousedown="btnMouseDownEvent('left', $event)" @mouseup="btnMouseUpEvent('left', $event)" @mouseout="clearBtnTimer">
+      <span class="gg-chevron-left"></span>
     </span>
-    <span class="epr-btn-track" @mousedown.self="mousedownEvent" @mouseup.self="mouseupEvent" @mouseout="clearTimer" ref="track">
+    <span class="epr-btn-track" @mousedown.self="trackMouseDownEvent" @mouseup.self="trackMouseUpEvent" @mouseout="clearTrackTimer" ref="track">
       <span class="epr-btn-slider" ref="slider" @mousedown="sliderMouseDown" @mouseup="sliderMouseUp" @mousemove="sliderMouseMove" @mouseout="sliderMouseOut"></span>
     </span>
-    <span class="epr-btn-increase" @click="handleChange('right')">
-      <span class="math-plus"></span>
+    <span class="epr-btn-increase" @mousedown="btnMouseDownEvent('right', $event)" @mouseup="btnMouseUpEvent('right', $event)">
+      <span class="gg-chevron-right"></span>
     </span>
   </div>
 </template>
@@ -30,7 +30,7 @@ export default defineComponent({
     },
     step: {
       type: Array,
-      default: [1, '5%', '10%']
+      default: [1, 2, '5%', '10%']
     },
     precision: {
       type: Number,
@@ -39,14 +39,16 @@ export default defineComponent({
   },
   emits: ['change'],
   setup (props, { emit }) {
-    const slider = ref() // 滑块 dom
-    const track = ref() // 滑道 dom
-    let sliderWidth = 0 // 滑块的宽度
-    let trackWidth = 0 // 滑道的宽度
-    let timer1: any = 0 // 判断是点击还是长按
-    let timer2: any = 0 // 长按时，间隔时间
-    let canMove = false // 判断能否拖拽
-    let x = 0 // 拖拽的位移距离
+    const slider = ref() // 【滑块】 dom
+    const track = ref() // 【滑道】 dom
+    let sliderWidth = 0 // 【滑块】的宽度
+    let trackWidth = 0 // 【滑道】的宽度
+    let btnTimer1: any = 0 // 判断【按钮】是点击还是长按
+    let btnTimer2: any = 0 // 【按钮】长按时，间隔时间
+    let trackTimer1: any = 0 // 判断【滑道】是点击还是长按
+    let trackTimer2: any = 0 // 【滑道】长按时，间隔时间
+    let canMove = false // 判断【滑块】能否拖拽
+    let x = 0 // 【滑块】拖拽的位移距离
 
     // 初始化，并检查值
     function initAndCheck () {
@@ -78,10 +80,17 @@ export default defineComponent({
       const value = (props.max - props.min) * newPos / (trackWidth - sliderWidth) + props.min
       emit('change', toPrecision(value))
     }
-    // 两侧按钮
-    function handleChange (pos: string) {
-      const sPos = getSliderLeft()
-      const propsStep = props.step[0]
+
+    // 【按钮】：按下
+    function btnMouseDownEvent (pos: string, e: MouseEvent) {
+      btnTimer1 = setTimeout(() => {
+        btnLongpress(pos, e)
+      }, 300)
+    }
+    // 【按钮】：长按
+    function btnLongpress (pos: string, e: MouseEvent) {
+      btnTimer1 = 0
+      const propsStep = props.step[1]
       let step = 0
       if (typeof propsStep === 'string') {
         if (propsStep.includes('%')) {
@@ -94,36 +103,81 @@ export default defineComponent({
       } else {
         return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
       }
-      if (pos === 'left') {
-        if (sPos - step < 0) {
-          slider.value.style.left = '0px'
-        } else {
-          slider.value.style.left = (sPos - step) + 'px'
+      btnTimer2 =setInterval(() => {
+        const sPos = getSliderLeft()
+        if (pos === 'left') {
+          if (sPos - step >= 0) {
+            slider.value.style.left = (sPos - step) + 'px'
+          } else {
+            slider.value.style.left = '0px'
+          }
         }
-      }
-      if (pos === 'right') {
-        if (sPos + sliderWidth + step < trackWidth) {
-          slider.value.style.left = (sPos + step) + 'px'
-        } else {
-          slider.value.style.left = (trackWidth - sliderWidth) + 'px'
+        if (pos === 'right') {
+          if (sPos + step <= trackWidth - sliderWidth) {
+            slider.value.style.left = (sPos + step) + 'px'
+          } else {
+            slider.value.style.left = (trackWidth - sliderWidth) + 'px'
+          }
         }
-      }
-      returnValue()
+        returnValue()
+      }, 250)
     }
-    // 鼠标按下事件
-    function mousedownEvent (e: MouseEvent) {
-      timer1 = setTimeout(() => {
-        longpress(e)
+    // 【按钮】：单击
+    function btnMouseUpEvent (pos: string, e: MouseEvent) {
+      clearTimeout(btnTimer1)
+      clearInterval(btnTimer2)
+      if (btnTimer1 !== 0) {
+        const propsStep = props.step[0]
+        let step = 0
+        if (typeof propsStep === 'string') {
+          if (propsStep.includes('%')) {
+            step = (trackWidth - sliderWidth) * Number(propsStep.replace('%', '')) / 100
+          } else {
+            step = Number(propsStep) * (trackWidth - sliderWidth) / (props.max - props.min)
+          }
+        } else if (typeof propsStep === 'number') {
+          step = propsStep * (trackWidth - sliderWidth) / (props.max - props.min)
+        } else {
+          return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
+        }
+        const sPos = getSliderLeft()
+        if (pos === 'left') {
+          if (sPos - step >= 0) {
+            slider.value.style.left = (sPos - step) + 'px'
+          } else {
+            slider.value.style.left = '0px'
+          }
+        }
+        if (pos === 'right') {
+          if (sPos + step <= trackWidth - sliderWidth) {
+            slider.value.style.left = (sPos + step) + 'px'
+          } else {
+            slider.value.style.left = (trackWidth - sliderWidth) + 'px'
+          }
+        }
+        returnValue()
+      }
+    }
+    // 【按钮】：清理定时器
+    function clearBtnTimer () {
+      clearTimeout(btnTimer1)
+      clearInterval(btnTimer2)
+    }
+
+    // 【滑道】：按下
+    function trackMouseDownEvent (e: MouseEvent) {
+      trackTimer1 = setTimeout(() => {
+        trackLongpress(e)
       }, 300)
     }
-    // 单击事件
-    function mouseupEvent (e: MouseEvent) {
-      clearTimeout(timer1)
-      clearInterval(timer2)
-      if (timer1 !== 0) {
+    // 【滑道】：单击
+    function trackMouseUpEvent (e: MouseEvent) {
+      clearTimeout(trackTimer1)
+      clearInterval(trackTimer2)
+      if (trackTimer1 !== 0) {
         const offsetX = e.offsetX
         const sPos = getSliderLeft()
-        const propsStep = props.step[1]
+        const propsStep = props.step[2]
         let step = 0
         if (typeof propsStep === 'string') {
           if (propsStep.includes('%')) {
@@ -152,11 +206,11 @@ export default defineComponent({
         returnValue()
       }
     }
-    // 长按事件
-    function longpress (e: MouseEvent) {
-      timer1 = 0
+    // 【滑道】：长按
+    function trackLongpress (e: MouseEvent) {
+      trackTimer1 = 0
       const offsetX = e.offsetX
-      const propsStep = props.step[2]
+      const propsStep = props.step[3]
       let step = 0
       if (typeof propsStep === 'string') {
         if (propsStep.includes('%')) {
@@ -169,7 +223,7 @@ export default defineComponent({
       } else {
         return console.error('[EPR SLIDER BUTTON]: 步进的值只能为：整数，数字型字符串 或 带百分号的字符串，如：[1, "2", "5%"]')
       }
-      timer2 =setInterval(() => {
+      trackTimer2 =setInterval(() => {
         const sPos = getSliderLeft()
         if (offsetX > sPos) {
           if (sPos + step < trackWidth - sliderWidth) {
@@ -187,27 +241,27 @@ export default defineComponent({
         returnValue()
       }, 250)
     }
-    // 清除定时器
-    function clearTimer () {
-      clearTimeout(timer1)
-      clearInterval(timer2)
+    // 【滑道】：清除定时器
+    function clearTrackTimer () {
+      clearTimeout(trackTimer1)
+      clearInterval(trackTimer2)
     }
-    
-    // 拖拽：鼠标按下
+
+    // 【拖拽】：鼠标按下
     function sliderMouseDown (evt: MouseEvent) {
       canMove = true
       const left = getSliderLeft()
       x = evt.clientX - left
     }
-    // 拖拽：鼠标松开
+    // 【拖拽】：鼠标松开
     function sliderMouseUp () {
       canMove = false
     }
-    // 拖拽：鼠标移出
+    // 【拖拽】：鼠标移出
     function sliderMouseOut () {
       canMove = false
     }
-    // 拖拽：鼠标拖拽
+    // 【拖拽】：鼠标拖拽
     function sliderMouseMove (evt: MouseEvent) {
       if (canMove) {
         if (evt.clientX - x < 0) {
@@ -228,10 +282,12 @@ export default defineComponent({
     return {
       track,
       slider,
-      handleChange,
-      mousedownEvent,
-      mouseupEvent,
-      clearTimer,
+      btnMouseDownEvent,
+      btnMouseUpEvent,
+      clearBtnTimer,
+      trackMouseDownEvent,
+      trackMouseUpEvent,
+      clearTrackTimer,
       sliderMouseDown,
       sliderMouseMove,
       sliderMouseUp,
@@ -260,16 +316,29 @@ export default defineComponent({
     background-color: #f7f6f6;
     border-radius: 14px 0 0 14px;
     border-right: 1px solid #c6c6c6;
-    .math-minus {
+    .gg-chevron-left {
+      color: #a0a0a0;
       box-sizing: border-box;
       position: relative;
       display: block;
       transform: scale(0.8);
-      width: 16px;
-      height: 2px;
-      background: currentColor;
-      border-radius: 10px;
-      color: #9a9a9a;
+      width: 22px;
+      height: 22px;
+      border: 2px solid transparent;
+      border-radius: 100px
+    }
+    .gg-chevron-left::after {
+      content: "";
+      display: block;
+      box-sizing: border-box;
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-bottom: 2px solid;
+      border-left: 2px solid;
+      transform: rotate(45deg);
+      left: 6px;
+      top: 4px
     }
   }
   .epr-btn-track{
@@ -284,9 +353,12 @@ export default defineComponent({
       left: 0px;
       display: inline-block;
       width: 32px;
-      height: 80%;
-      background-color: #2e99ce;
-      border-radius: 30%;
+      height: 18px;
+      background-image: linear-gradient(#009efa, #2256a7);
+      border-radius: 9px;
+      &:hover{
+        cursor: w-resize;
+      }
     }
   }
   .epr-btn-increase{
@@ -300,28 +372,29 @@ export default defineComponent({
     background-color: #f7f6f6;
     border-radius: 0 14px 14px 0;
     border-left: 1px solid #c6c6c6;
-    .math-plus,
-    .math-plus::after {
-        display: block;
-        box-sizing: border-box;
-        background: currentColor;
-        border-radius: 10px
+    .gg-chevron-right {
+      color: #a0a0a0;
+      box-sizing: border-box;
+      position: relative;
+      display: block;
+      transform: scale(0.8);
+      width: 22px;
+      height: 22px;
+      border: 2px solid transparent;
+      border-radius: 100px;
     }
-    .math-plus {
-        margin-top: -2px;
-        position: relative;
-        transform: scale(0.8);
-        width: 16px;
-        height: 2px;
-        color: #9a9a9a;
-    }
-    .math-plus::after {
-        content: "";
-        position: absolute;
-        width: 2px;
-        height: 16px;
-        top: -7px;
-        left: 7px
+    .gg-chevron-right::after {
+      content: "";
+      display: block;
+      box-sizing: border-box;
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-bottom: 2px solid;
+      border-right: 2px solid;
+      transform: rotate(-45deg);
+      right: 6px;
+      top: 4px
     }
   }
 }

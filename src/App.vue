@@ -39,7 +39,7 @@ export default defineComponent({
     const config: Config = reactive({
       min: 0,
       max: 100,
-      step: [1, '2', '3%'],
+      step: [1, 2, '3', '4%'],
       step2: [1, 2],
       value: 50,
       value2: 50,
@@ -93,6 +93,6 @@ export default defineComponent({
 .item{
   margin: 0 auto;
   width: 256px;
-  height: 28px;
+  height: 26px;
 }
 </style>

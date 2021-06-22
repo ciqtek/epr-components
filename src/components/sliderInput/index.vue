@@ -1,18 +1,17 @@
 <template>
   <div class="epr-btn">
     <span class="epr-btn-reduce" @click="handleChange('left')">
-      <span class="math-minus"></span>
+      <span class="gg-chevron-left"></span>
     </span>
     <span class="epr-btn-content">
       <input class="epr-btn-input" v-model="value" type="text" @change="changeEvent" @keydown.down="keyEvent('down')" @keydown.up="keyEvent('up')">
     </span>
     <span class="epr-btn-increase" @click="handleChange('right')">
-      <span class="math-plus"></span>
+      <span class="gg-chevron-right"></span>
     </span>
   </div>
 </template>
 <script lang="ts">
-import { error } from 'console'
 import { defineComponent, onMounted, ref } from 'vue'
 export default defineComponent({
   name: 'epr-slider-input',
